@@ -2,13 +2,27 @@
 
 
 #include "MovingPlatform.h"
-#include "Math/UnrealMathUtility.h"
 
 AMovingPlatform::AMovingPlatform()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	SetMobility(EComponentMobility::Movable);
+}
+
+void AMovingPlatform::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (HasAuthority())
+	{
+		SetReplicates(true);
+		SetReplicateMovement(true);
+	}
+
+	GlobalStartLocation = GetActorLocation();
+	// TargetLocation을 Gloabl로 변경
+	GlobalTargetLocation = GetTransform().TransformPosition(TargetLocation);
 }
 
 void AMovingPlatform::Tick(float DeltaTime)
@@ -19,7 +33,15 @@ void AMovingPlatform::Tick(float DeltaTime)
 	if (HasAuthority())
 	{
 		FVector Location = GetActorLocation();
-		Location += FVector(Speed * DeltaTime, 0.0f, 0.0f);
+		float MoveLength = (GlobalStartLocation - GlobalTargetLocation).Size();
+		float MovedLength = (GlobalStartLocation - Location).Size();
+		if (MovedLength >= MoveLength)
+		{
+			Swap(GlobalStartLocation, GlobalTargetLocation);
+		}
+		FVector Direction = (GlobalTargetLocation - GlobalStartLocation).GetSafeNormal();
+
+		Location += Speed * DeltaTime * Direction;
 		SetActorLocation(Location);
 	}
 }

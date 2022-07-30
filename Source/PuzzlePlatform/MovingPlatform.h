@@ -17,9 +17,18 @@ class PUZZLEPLATFORM_API AMovingPlatform : public AStaticMeshActor
 public:
 	AMovingPlatform();
 
+	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 
 private:
 	UPROPERTY(EditAnywhere)
-	float Speed = 30.0f;
+	float Speed = 200.0f;
+
+	// MakeEditWidget : 트랜스폼 또는 로테이터, 아니면 그 배열에 사용됩니다. 프로퍼티를 뷰포트에 이동가능 위젯으로 노출시켜야 함을 나타냅니다.
+	UPROPERTY(EditAnywhere, Meta = (MakeEditWidget = true))
+	FVector TargetLocation;
+
+	FVector GlobalTargetLocation;
+	FVector GlobalStartLocation;
 };
